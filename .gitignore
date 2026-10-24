@@ -55,3 +55,38 @@ BilleteraDistribuida_respaldo/
 
 # Firma de Android
 key.properties
+
+# Android y Gradle
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+.cxx/
+.externalNativeBuild/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Datos privados
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.jks
+*.keystore
+secrets.properties
+
+# Instaladores generados
+*.apk
+*.aab
+
+# Respaldos
+backend_respaldo/
+BilleteraDistribuida_respaldo/
