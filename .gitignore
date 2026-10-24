@@ -1,0 +1,57 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android y Gradle
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+.cxx/
+.externalNativeBuild/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Credenciales y datos privados
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.jks
+*.keystore
+*.pem
+*.key
+secrets.properties
+
+# Aplicaciones compiladas
+*.apk
+*.aab
+
+# Copias de seguridad
+backend_respaldo/
+BilleteraDistribuida_respaldo/
+
+# Firma de Android
+key.properties
