@@ -302,12 +302,11 @@ def exigir_propiedad(cuenta: str, usuario: dict):
 
 @app.post('/auth/registro', response_model=AuthRespuesta, status_code=201)
 def registrar_usuario(datos: Credenciales, request: Request):
-    # Por defecto, no se crean cuentas desde internet sin autorización expresa.
     if not REGISTRATION_ENABLED:
-    raise HTTPException(
-        status_code=403,
-        detail="Registro cerrado. Contacta al responsable del proyecto."
-    )
+        raise HTTPException(
+            status_code=403,
+            detail="Registro cerrado. Contacta al responsable del proyecto."
+        )
 
     if REGISTRATION_ALLOWED_EMAILS:
         if str(datos.email) not in REGISTRATION_ALLOWED_EMAILS:
@@ -315,7 +314,7 @@ def registrar_usuario(datos: Credenciales, request: Request):
                 status_code=403,
                 detail="Correo no autorizado para esta demo"
             )
-    
+
     elif PUBLIC_MODE and not registro_demo_activo():
         raise HTTPException(
             status_code=403,
