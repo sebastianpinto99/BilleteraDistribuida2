@@ -29,6 +29,7 @@ from psycopg.types.json import Jsonb
 from pwdlib import PasswordHash
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from starlette.concurrency import run_in_threadpool
+from datetime import datetime, timezone
 
 load_dotenv(Path(__file__).with_name('.env'))
 
@@ -45,14 +46,49 @@ REGISTRATION_ALLOWED_EMAILS = {
     e.strip().lower() for e in os.getenv('REGISTRATION_ALLOWED_EMAILS', '').split(',')
     if e.strip()
 }
+DEMO_REGISTRATION_ENABLED = (
+    os.getenv("DEMO_REGISTRATION_ENABLED", "false")
+    .strip()
+    .lower() == "true"
+)
+
+DEMO_REGISTRATION_UNTIL = os.getenv(
+    "DEMO_REGISTRATION_UNTIL", ""
+).strip()
 REQUIRE_IDEMPOTENCY = os.getenv('REQUIRE_IDEMPOTENCY', 'true').lower() == 'true'
 # No habilitar registros públicos anónimos en este entorno académico.
+def registro_demo_activo():
+    if not DEMO_REGISTRATION_ENABLED:
+        return False
 
+    if not DEMO_REGISTRATION_UNTIL:
+        return False
+
+    try:
+        fecha_fin = datetime.fromisoformat(
+            DEMO_REGISTRATION_UNTIL.replace("Z", "+00:00")
+        )
+
+        if fecha_fin.tzinfo is None:
+            return False
+
+        return datetime.now(timezone.utc) < fecha_fin
+
+    except ValueError:
+        return False
+        
 def validar_configuracion_publica():
     if PUBLIC_MODE and REGISTRATION_ENABLED and not REGISTRATION_ALLOWED_EMAILS:
-        raise RuntimeError('En PUBLIC_MODE, el registro requiere REGISTRATION_ALLOWED_EMAILS')
+        if not DEMO_REGISTRATION_ENABLED or not DEMO_REGISTRATION_UNTIL:
+            raise RuntimeError(
+                "En PUBLIC_MODE, el registro requiere correos "
+                "autorizados o un modo demo con fecha límite"
+            )
+
     if PUBLIC_MODE and not REQUIRE_IDEMPOTENCY:
-        raise RuntimeError('En PUBLIC_MODE se exige REQUIRE_IDEMPOTENCY=true')
+        raise RuntimeError(
+            "En PUBLIC_MODE se exige REQUIRE_IDEMPOTENCY=true"
+        )
 
 
 def limitar_solicitudes(clave: str, maximo: int, segundos: int):
@@ -268,9 +304,23 @@ def exigir_propiedad(cuenta: str, usuario: dict):
 def registrar_usuario(datos: Credenciales, request: Request):
     # Por defecto, no se crean cuentas desde internet sin autorización expresa.
     if not REGISTRATION_ENABLED:
-        raise HTTPException(status_code=403, detail='Registro cerrado. Contacta al responsable del proyecto.')
-    if REGISTRATION_ALLOWED_EMAILS and str(datos.email) not in REGISTRATION_ALLOWED_EMAILS:
-        raise HTTPException(status_code=403, detail='Correo no autorizado para esta demo')
+    raise HTTPException(
+        status_code=403,
+        detail="Registro cerrado. Contacta al responsable del proyecto."
+    )
+
+    if REGISTRATION_ALLOWED_EMAILS:
+        if str(datos.email) not in REGISTRATION_ALLOWED_EMAILS:
+            raise HTTPException(
+                status_code=403,
+                detail="Correo no autorizado para esta demo"
+            )
+    
+    elif PUBLIC_MODE and not registro_demo_activo():
+        raise HTTPException(
+            status_code=403,
+            detail="El registro de demostración está cerrado o ha vencido"
+        )
     limitar_solicitudes(f'registro:correo:{datos.email}', 3, 3600)
     limitar_solicitudes(f'registro:ip:{request.client.host if request.client else "unknown"}', 15, 3600)
     # Argon2 antes de abrir transacción: evita retener bloqueos mientras calcula hash.
