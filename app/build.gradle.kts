@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.billeteradistribuida"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -23,7 +23,7 @@ android {
     buildTypes {
         release {
             optimization {
-                enable = true
+                enable = false
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }

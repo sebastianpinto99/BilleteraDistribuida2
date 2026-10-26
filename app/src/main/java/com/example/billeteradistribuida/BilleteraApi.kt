@@ -10,8 +10,8 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 // Solo para el emulador y la prueba local. En Render cambiar a https://.../
-const val URL_REST = "http://10.0.2.2:8000/"
-const val URL_SOCKET_BASE = "ws://10.0.2.2:8000/"
+const val URL_REST = "https://billeteradistribuida-demo.onrender.com/"
+const val URL_SOCKET_BASE = "wss://billeteradistribuida-demo.onrender.com/"
 
 data class CuentaRespuesta(
     val cuenta: String,
